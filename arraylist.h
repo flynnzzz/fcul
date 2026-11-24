@@ -120,7 +120,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
         (alH_head *)malloc(sizeof(alH_head) + (capacity * sizeof(T)));         \
     if (!head) {                                                               \
       alH_log("Cannot allocate memory");                                       \
-      exit(EXIT_FAILURE);                                                      \
+      return NULL;                                                             \
     }                                                                          \
     head->capacity = capacity;                                                 \
     head->length = 0;                                                          \
@@ -249,8 +249,9 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
                                    int (*cmp)(const T a, const T b)) {         \
     alH_nullguard(array, "NULL pointer", AL_ERRSIZE);                          \
                                                                                \
-    for (size_t i = 0; i < al_length(array); i++) {                            \
-      int found = (cmp == NULL) ? memcmp(&array[i], &item, sizeof(T))          \
+    size_t length = al_length(array);                                          \
+    for (size_t i = 0; i < length; i++) {                                      \
+      int found = (cmp == NULL) ? memcmp(&array[i], &item, sizeof(T)) == 0     \
                                 : cmp(array[i], item) == 0;                    \
       if (found) {                                                             \
         return i;                                                              \
@@ -314,17 +315,16 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
                              int (*cmp)(const T a, const T b)) {               \
     alH_nullguard(array, "NULL pointer", AL_FAIL);                             \
                                                                                \
-    int removed = 0;                                                           \
-    size_t i = 0;                                                              \
+    size_t removed = 0, i = 0;                                                 \
     while (i < al_length(array)) {                                             \
-      int found = (cmp == NULL) ? memcmp(&array[i], &item, sizeof(T))          \
+      int found = (cmp == NULL) ? memcmp(&array[i], &item, sizeof(T)) == 0     \
                                 : cmp(array[i], item) == 0;                    \
       if (found) {                                                             \
         size_t n_found = 1;                                                    \
-        for (size_t j = i; j < al_length(array) - 1; j++) {                    \
-          int found_adjacent = (cmp == NULL)                                   \
-                                   ? memcmp(&array[i + 1], &item, sizeof(T))   \
-                                   : cmp(array[i + 1], item) == 0;             \
+        for (size_t j = i; j + 1 < al_length(array); j++) {                    \
+          int found_adjacent = (cmp == NULL) ? memcmp(&array[i + n_found],     \
+                                                      &item, sizeof(T)) == 0   \
+                                             : cmp(array[i + 1], item) == 0;   \
           if (found_adjacent)                                                  \
             n_found++;                                                         \
           else                                                                 \
@@ -332,7 +332,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
         }                                                                      \
                                                                                \
         memmove(&array[i], &array[i + n_found],                                \
-                sizeof(T) * (al_length(array) - i));                           \
+                sizeof(T) * (al_length(array) - i - n_found));                 \
         __alH_head(array)->length -= n_found;                                  \
         removed += n_found;                                                    \
       } else                                                                   \

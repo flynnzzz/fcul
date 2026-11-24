@@ -16,7 +16,10 @@
   fflush(stdout);
 #define PASS() printf(" > PASSED\n")
 
-AL_DEFINE_SCALAR(int, int)
+al_define(int, int);
+
+#define AL_ERRTYPE 0
+#define AL_MAXCAP ((AL_MAXSIZE - sizeof(alH_head)) / sizeof(int))
 
 int int_to_string(int t, char *buf) { return snprintf(buf, 32, "%d", t); }
 
@@ -50,7 +53,7 @@ static void test_new_array() {
   assert(al_capacity(array) >= AL_INIT_CAPACITY);
   assert(al_free(array));
 
-  array = al_create(44);
+  array = al_create_int(44);
   assert(al_length(array) == 0);
   assert(al_capacity(array) == 44);
   assert(al_free(array));
@@ -148,18 +151,18 @@ static void test_remove_nonexistent_value() {
 static void test_remove_more_occurrences() {
   TEST("test_remove_all_occurrences");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 5);
-  al_push(&array, 3);
-  al_push(&array, 5);
-  al_push(&array, 7);
-  al_push(&array, 5);
+  al_push_int(&array, 5);
+  al_push_int(&array, 3);
+  al_push_int(&array, 5);
+  al_push_int(&array, 7);
+  al_push_int(&array, 5);
 
   assert(al_length(array) == 5);
 
-  al_rm(array, 5, NULL);
-  al_rm(array, 5, NULL);
+  al_rm_int(array, 5, NULL);
+  al_rm_int(array, 5, NULL);
 
   assert(al_length(array) == 3);
   assert(array[0] == 3);
@@ -173,18 +176,18 @@ static void test_remove_more_occurrences() {
 static void test_iremove_basic() {
   TEST("test_iremove_basic");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 1);
-  al_push(&array, 2);
-  al_push(&array, 3);
-  al_push(&array, 4);
-  al_push(&array, 5);
+  al_push_int(&array, 1);
+  al_push_int(&array, 2);
+  al_push_int(&array, 3);
+  al_push_int(&array, 4);
+  al_push_int(&array, 5);
 
   assert(al_length(array) == 5);
 
   // Remove element at index 2 (value 3)
-  al_rmat(array, 2);
+  al_rmat_int(array, 2);
 
   assert(al_length(array) == 4);
   assert(array[2] == 4); // Element shifted from index 3
@@ -196,25 +199,25 @@ static void test_iremove_basic() {
 static void test_iremove_first_and_last() {
   TEST("test_iremove_first_and_last");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 10);
-  al_push(&array, 20);
-  al_push(&array, 30);
-  al_push(&array, 40);
-  al_push(&array, 50);
+  al_push_int(&array, 10);
+  al_push_int(&array, 20);
+  al_push_int(&array, 30);
+  al_push_int(&array, 40);
+  al_push_int(&array, 50);
 
   assert(al_length(array) == 5);
 
-  al_rmat(array, 0);
+  al_rmat_int(array, 0);
   assert(al_length(array) == 4);
   assert(array[0] == 20);
 
-  al_rmat(array, 3);
+  al_rmat_int(array, 3);
   assert(al_length(array) == 3);
   assert(array[2] == 40);
 
-  al_rmat(array, 1);
+  al_rmat_int(array, 1);
   assert(al_length(array) == 2);
 
   assert(al_free(array));
@@ -224,10 +227,10 @@ static void test_iremove_first_and_last() {
 static void test_iremove_empty_array() {
   TEST("test_iremove_empty_array");
 
-  T *array = al_init();
-  assert(al_rm(array, 0, NULL) == AL_ERRTYPE);
-  assert(al_rm(array, 10, NULL) == AL_ERRTYPE);
-  assert(al_rm(array, -10, NULL) == AL_ERRTYPE);
+  int *array = al_init_int();
+  assert(al_rm_int(array, 0, NULL) == AL_ERRTYPE);
+  assert(al_rm_int(array, 10, NULL) == AL_ERRTYPE);
+  assert(al_rm_int(array, -10, NULL) == AL_ERRTYPE);
 
   assert(al_free(array));
   PASS();
@@ -236,17 +239,17 @@ static void test_iremove_empty_array() {
 static void test_iremove_middle_element() {
   TEST("test_iremove_middle_element");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 100);
-  al_push(&array, 200);
-  al_push(&array, 300);
-  al_push(&array, 400);
-  al_push(&array, 500);
+  al_push_int(&array, 100);
+  al_push_int(&array, 200);
+  al_push_int(&array, 300);
+  al_push_int(&array, 400);
+  al_push_int(&array, 500);
 
   assert(al_length(array) == 5);
 
-  al_rmat(array, 2);
+  al_rmat_int(array, 2);
 
   assert(al_length(array) == 4);
   assert(array[1] == 200);
@@ -259,16 +262,16 @@ static void test_iremove_middle_element() {
 static void test_push_remove_same_value() {
   TEST("test_push_remove_same_value");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 10);
+  al_push_int(&array, 10);
   assert(al_length(array) == 1);
-  assert(al_rm(array, 10, NULL));
+  assert(al_rm_int(array, 10, NULL));
   assert(al_length(array) == 0);
 
-  al_push(&array, 10);
+  al_push_int(&array, 10);
   assert(al_length(array) == 1);
-  assert(al_rm(array, 10, NULL));
+  assert(al_rm_int(array, 10, NULL));
   assert(al_length(array) == 0);
 
   assert(al_free(array));
@@ -278,22 +281,22 @@ static void test_push_remove_same_value() {
 static void test_push_remove_interleaved() {
   TEST("test_push_remove_interleaved");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 1);
-  al_push(&array, 2);
-  al_push(&array, 3);
+  al_push_int(&array, 1);
+  al_push_int(&array, 2);
+  al_push_int(&array, 3);
 
   assert(al_length(array) == 3);
 
   // Remove middle value
-  al_rm(array, 2, NULL);
+  al_rm_int(array, 2, NULL);
   assert(al_length(array) == 2);
   assert(array[0] == 1);
   assert(array[1] == 3);
 
   // Insert another value
-  al_push(&array, 4);
+  al_push_int(&array, 4);
   assert(al_length(array) == 3);
   assert(array[1] == 3);
   assert(array[2] == 4);
@@ -305,18 +308,18 @@ static void test_push_remove_interleaved() {
 static void test_capacity_boundary() {
   TEST("test_capacity_boundary");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
   // Insert many elements to near capacity
   for (size_t i = 0; i < AL_INIT_CAPACITY - 1; i++) {
-    al_push(&array, i);
+    al_push_int(&array, i);
   }
 
   assert(al_length(array) == AL_INIT_CAPACITY - 1);
   assert(al_capacity(array) >= AL_INIT_CAPACITY);
 
   // Insert one more to trigger growth
-  al_push(&array, AL_INIT_CAPACITY - 1);
+  al_push_int(&array, AL_INIT_CAPACITY - 1);
 
   assert(al_length(array) == AL_INIT_CAPACITY);
   assert(al_capacity(array) >= AL_INIT_CAPACITY);
@@ -328,19 +331,19 @@ static void test_capacity_boundary() {
 static void test_remove_at_boundary() {
   TEST("test_remove_at_boundary");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
   for (size_t i = 1; i <= 5; i++) {
-    al_push(&array, i);
+    al_push_int(&array, i);
   }
   assert(al_length(array) == 5);
 
   // Remove last element
-  al_rm(array, 5, NULL);
+  al_rm_int(array, 5, NULL);
   assert(al_length(array) == 4);
 
   // Remove new last element
-  al_rm(array, 4, NULL);
+  al_rm_int(array, 4, NULL);
   assert(al_length(array) == 3);
 
   assert(al_free(array));
@@ -350,17 +353,17 @@ static void test_remove_at_boundary() {
 static void test_iremove_out_of_bounds() {
   TEST("test_iremove_out_of_bounds");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
   for (size_t i = 0; i < 10; i++) {
-    al_push(&array, i);
+    al_push_int(&array, i);
   }
   assert(al_length(array) == 10);
 
-  assert(al_rmat(array, -1) == AL_ERRTYPE);
+  assert(al_rmat_int(array, -1) == AL_ERRTYPE);
   assert(al_length(array) == 10); // Should still be 10
 
-  assert(al_rmat(array, 99) == AL_ERRTYPE);
+  assert(al_rmat_int(array, 99) == AL_ERRTYPE);
   assert(al_length(array) == 10); // Should still be 10
 
   assert(al_free(array));
@@ -370,23 +373,23 @@ static void test_iremove_out_of_bounds() {
 static void test_remove_first_occurrence_edge_case() {
   TEST("test_remove_first_occurrence_edge_case");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
   // All elements are the same value
   for (size_t i = 0; i < 5; i++) {
-    al_push(&array, 42);
+    al_push_int(&array, 42);
   }
 
   assert(al_length(array) == 5);
 
   // Remove should only remove first occurrence
-  al_rm(array, 42, NULL);
+  al_rm_int(array, 42, NULL);
 
   assert(al_length(array) == 4);
   assert(array[0] == 42); // Still has 42 at index 0 (was the second original)
 
   // Remove again - should still be first remaining occurrence
-  al_rm(array, 42, NULL);
+  al_rm_int(array, 42, NULL);
   assert(al_length(array) == 3);
 
   assert(al_free(array));
@@ -396,29 +399,29 @@ static void test_remove_first_occurrence_edge_case() {
 static void test_mixed_operations() {
   TEST("test_mixed_operations");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 10);
-  al_push(&array, 20);
-  al_push(&array, 30);
-  al_push(&array, 40);
+  al_push_int(&array, 10);
+  al_push_int(&array, 20);
+  al_push_int(&array, 30);
+  al_push_int(&array, 40);
 
   assert(al_length(array) == 4);
 
   // Remove middle value
-  al_rm(array, 30, NULL);
+  al_rm_int(array, 30, NULL);
   assert(al_length(array) == 3);
 
   // Insert new value
-  al_push(&array, 99);
+  al_push_int(&array, 99);
   assert(al_length(array) == 4);
 
   // Remove first value
-  al_rmat(array, 0);
+  al_rmat_int(array, 0);
   assert(al_length(array) == 3);
 
   // Remove last value
-  al_rmat(array, al_length(array) - 1);
+  al_rmat_int(array, al_length(array) - 1);
   assert(al_length(array) == 2);
 
   assert(al_free(array));
@@ -428,16 +431,16 @@ static void test_mixed_operations() {
 static void test_empty_value_removal() {
   TEST("test_empty_value_removal");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 0);
-  al_push(&array, 1);
-  al_push(&array, 2);
+  al_push_int(&array, 0);
+  al_push_int(&array, 1);
+  al_push_int(&array, 2);
 
   assert(al_length(array) == 3);
 
   // Remove 0 (valid integer value, not empty array)
-  al_rm(array, 0, NULL);
+  al_rm_int(array, 0, NULL);
   assert(al_length(array) == 2);
   assert(array[0] == 1);
   assert(array[1] == 2);
@@ -449,16 +452,16 @@ static void test_empty_value_removal() {
 static void test_negative_value_removal() {
   TEST("test_negative_value_removal");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, -100);
-  al_push(&array, 0);
-  al_push(&array, 100);
+  al_push_int(&array, -100);
+  al_push_int(&array, 0);
+  al_push_int(&array, 100);
 
   assert(al_length(array) == 3);
 
   // Remove negative value
-  al_rm(array, -100, NULL);
+  al_rm_int(array, -100, NULL);
   assert(al_length(array) == 2);
   assert(array[0] == 0);
   assert(array[1] == 100);
@@ -470,19 +473,19 @@ static void test_negative_value_removal() {
 static void test_large_number_of_items() {
   TEST("test_large_number_of_items");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
   for (size_t i = 0; i < 1000; i++) {
-    al_push(&array, i);
+    al_push_int(&array, i);
   }
 
   assert(al_length(array) == 1000);
 
-  al_rm(array, 500, NULL);
+  al_rm_int(array, 500, NULL);
   assert(al_length(array) == 999);
   assert(array[500] == 501);
 
-  al_rmat(array, 100);
+  al_rmat_int(array, 100);
   assert(al_length(array) == 998);
 
   assert(al_free(array));
@@ -492,21 +495,21 @@ static void test_large_number_of_items() {
 static void test_remove_then_push_same() {
   TEST("test_remove_then_push_same");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  al_push(&array, 5);
+  al_push_int(&array, 5);
   assert(al_length(array) == 1);
 
-  al_rm(array, 5, NULL);
+  al_rm_int(array, 5, NULL);
   assert(al_length(array) == 0);
 
   // Insert same value again
-  al_push(&array, 5);
+  al_push_int(&array, 5);
   assert(al_length(array) == 1);
   assert(array[0] == 5);
 
   // Remove again - should be empty
-  al_rm(array, 5, NULL);
+  al_rm_int(array, 5, NULL);
   assert(al_length(array) == 0);
 
   assert(al_free(array));
@@ -516,11 +519,11 @@ static void test_remove_then_push_same() {
 static void test_print_empty_array() {
   TEST("test_print_empty_array");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
 #ifdef AL_TEST_LOG
   printf("Empty array: ");
-  al_print(array);
+  al_print_int(array);
 #endif
   assert(al_length(array) == 0);
 
@@ -531,12 +534,12 @@ static void test_print_empty_array() {
 static void test_print_single_element() {
   TEST("test_print_single_element");
 
-  T *array = al_init();
-  al_push(&array, 42);
+  int *array = al_init_int();
+  al_push_int(&array, 42);
 
 #ifdef AL_TEST_LOG
   printf("Single element array: ");
-  al_print(array);
+  al_print_int(array);
 #endif
 
   assert(al_length(array) == 1);
@@ -548,24 +551,24 @@ static void test_print_single_element() {
 static void test_all_functions_used() {
   TEST("test_all_functions_used");
 
-  T *array = al_init();
+  int *array = al_init_int();
   assert(al_length(array) == 0);
   assert(al_capacity(array) == AL_INIT_CAPACITY);
 
-  T *array2 = al_create(0);
+  int *array2 = al_create_int(0);
   assert(al_length(array2) == 0);
   assert(al_capacity(array2) == AL_INIT_CAPACITY);
 
-  al_push(&array, 99);
+  al_push_int(&array, 99);
   assert(al_length(array) == 1);
-  al_rm(array, 99, NULL);
+  al_rm_int(array, 99, NULL);
   assert(al_length(array) == 0);
 
-  assert(al_push(&array, 1));
-  assert(al_push(&array, 2));
-  assert(al_push(&array, 3));
+  assert(al_push_int(&array, 1));
+  assert(al_push_int(&array, 2));
+  assert(al_push_int(&array, 3));
   assert(al_length(array) == 3);
-  assert(al_rmat(array, 1));
+  assert(al_rmat_int(array, 1));
   assert(al_length(array) == 2);
 
   assert(al_free(array));
@@ -576,7 +579,7 @@ static void test_all_functions_used() {
 static void test_new_exceed_maximum_capacity() {
   TEST("test_new_exceed_maximum_capacity");
 
-  T *array = al_create(AL_MAXCAP);
+  int *array = al_create_int(AL_MAXCAP);
   assert(array == NULL);
 
   PASS();
@@ -585,7 +588,7 @@ static void test_new_exceed_maximum_capacity() {
 static void test_create_large_number() {
   TEST("test_create_large_number");
 
-  T *array = al_create(AL_MAXCAP - 1);
+  int *array = al_create_int(AL_MAXCAP - 1);
   assert(!array);
   assert(!al_free(array));
 
@@ -603,29 +606,29 @@ static void test_nullptr_guard() {
 static void test_insert_start() {
   TEST("test_insert_start");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  assert(al_push(&array, 100));
-  assert(al_push(&array, 200));
-  assert(al_push(&array, 300));
-  assert(al_push(&array, 400));
+  assert(al_push_int(&array, 100));
+  assert(al_push_int(&array, 200));
+  assert(al_push_int(&array, 300));
+  assert(al_push_int(&array, 400));
 
   assert(al_length(array) == 4);
 
-  assert(al_insert(&array, 0, 1000));
+  assert(al_insert_int(&array, 0, 1000));
   assert(al_length(array) == 5);
   assert(array[0] == 1000);
   assert(array[1] == 100);
 
-  assert(al_insert(&array, 0, 2000));
+  assert(al_insert_int(&array, 0, 2000));
   assert(al_length(array) == 6);
   assert(array[0] == 2000);
   assert(array[1] == 1000);
   assert(array[2] == 100);
 
-  assert(al_insert(&array, 0, 3000));
-  assert(al_insert(&array, 0, 4000));
-  assert(al_insert(&array, 0, 5000));
+  assert(al_insert_int(&array, 0, 3000));
+  assert(al_insert_int(&array, 0, 4000));
+  assert(al_insert_int(&array, 0, 5000));
   assert(array[0] == 5000);
   assert(array[1] == 4000);
   assert(array[2] == 3000);
@@ -638,16 +641,16 @@ static void test_insert_start() {
 static void test_insert_end() {
   TEST("test_insert_end");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  assert(al_push(&array, 100));
-  assert(al_push(&array, 200));
-  assert(al_push(&array, 300));
-  assert(al_push(&array, 400));
+  assert(al_push_int(&array, 100));
+  assert(al_push_int(&array, 200));
+  assert(al_push_int(&array, 300));
+  assert(al_push_int(&array, 400));
 
   assert(al_length(array) == 4);
 
-  assert(al_insert(&array, al_length(array), 1000));
+  assert(al_insert_int(&array, al_length(array), 1000));
   assert(al_length(array) == 5);
   assert(array[0] == 100);
   assert(array[1] == 200);
@@ -655,14 +658,14 @@ static void test_insert_end() {
   assert(array[3] == 400);
   assert(array[4] == 1000);
 
-  assert(al_insert(&array, al_length(array), 2000));
+  assert(al_insert_int(&array, al_length(array), 2000));
   assert(al_length(array) == 6);
   assert(array[4] == 1000);
   assert(array[5] == 2000);
 
-  assert(al_insert(&array, al_length(array), 3000));
-  assert(al_insert(&array, al_length(array), 4000));
-  assert(al_insert(&array, al_length(array), 5000));
+  assert(al_insert_int(&array, al_length(array), 3000));
+  assert(al_insert_int(&array, al_length(array), 4000));
+  assert(al_insert_int(&array, al_length(array), 5000));
   assert(array[6] == 3000);
   assert(array[7] == 4000);
   assert(array[8] == 5000);
@@ -675,16 +678,16 @@ static void test_insert_end() {
 static void test_insert_middle() {
   TEST("test_insert_middle");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  assert(al_push(&array, 100));
-  assert(al_push(&array, 200));
-  assert(al_push(&array, 300));
-  assert(al_push(&array, 400));
+  assert(al_push_int(&array, 100));
+  assert(al_push_int(&array, 200));
+  assert(al_push_int(&array, 300));
+  assert(al_push_int(&array, 400));
 
   assert(al_length(array) == 4);
 
-  assert(al_insert(&array, 2, 1000));
+  assert(al_insert_int(&array, 2, 1000));
   assert(al_length(array) == 5);
   assert(array[0] == 100);
   assert(array[1] == 200);
@@ -692,7 +695,7 @@ static void test_insert_middle() {
   assert(array[3] == 300);
   assert(array[4] == 400);
 
-  assert(al_insert(&array, 3, 2000));
+  assert(al_insert_int(&array, 3, 2000));
   assert(al_length(array) == 6);
   assert(array[0] == 100);
   assert(array[1] == 200);
@@ -701,16 +704,16 @@ static void test_insert_middle() {
   assert(array[4] == 300);
   assert(array[5] == 400);
 
-  assert(al_insert(&array, al_length(array), 3000));
-  assert(al_insert(&array, al_length(array), 4000));
-  assert(al_insert(&array, al_length(array), 5000));
+  assert(al_insert_int(&array, al_length(array), 3000));
+  assert(al_insert_int(&array, al_length(array), 4000));
+  assert(al_insert_int(&array, al_length(array), 5000));
   assert(al_length(array) == 9);
   assert(array[6] == 3000);
   assert(array[7] == 4000);
   assert(array[8] == 5000);
 
-  assert(al_insert(&array, 0, 6000));
-  assert(al_insert(&array, 1, 7000));
+  assert(al_insert_int(&array, 0, 6000));
+  assert(al_insert_int(&array, 1, 7000));
   assert(al_length(array) == 11);
   assert(array[0] == 6000);
   assert(array[1] == 7000);
@@ -722,27 +725,27 @@ static void test_insert_middle() {
 static void test_insert_fail() {
   TEST("test_insert_fail");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  assert(al_push(&array, 100));
-  assert(al_push(&array, 200));
-  assert(al_push(&array, 300));
-  assert(al_push(&array, 400));
+  assert(al_push_int(&array, 100));
+  assert(al_push_int(&array, 200));
+  assert(al_push_int(&array, 300));
+  assert(al_push_int(&array, 400));
 
   assert(al_length(array) == 4);
 
-  assert(al_insert(&array, 999, 0) == AL_FAIL);
+  assert(al_insert_int(&array, 999, 0) == AL_FAIL);
   assert(al_length(array) == 4);
   assert(array[0] == 100);
   assert(array[1] == 200);
   assert(array[2] == 300);
   assert(array[3] == 400);
 
-  assert(al_insert(NULL, 0, 0) == AL_FAIL);
+  assert(al_insert_int(NULL, 0, 0) == AL_FAIL);
   assert(al_length(array) == 4);
 
-  T *nullarray = NULL;
-  assert(al_insert(&nullarray, 0, 0) == AL_FAIL);
+  int *nullarray = NULL;
+  assert(al_insert_int(&nullarray, 0, 0) == AL_FAIL);
 
   assert(al_free(array));
   PASS();
@@ -751,46 +754,46 @@ static void test_insert_fail() {
 static void test_remove_all() {
   TEST("test_remove_all");
 
-  T *array = al_init();
+  int *array = al_init_int();
 
-  assert(al_push(&array, 100));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 200));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 300));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 400));
-  assert(al_push(&array, 88888888));
+  assert(al_push_int(&array, 100));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 200));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 300));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 400));
+  assert(al_push_int(&array, 88888888));
 
   assert(al_length(array) == 8);
-  assert(al_rmall(array, 88888888, NULL) == 4);
+  assert(al_rmall_int(array, 88888888, NULL) == 4);
   assert(al_length(array) == 4);
 
-  assert(al_rmall(array, 100, NULL) == 1);
+  assert(al_rmall_int(array, 100, NULL) == 1);
   assert(al_length(array) == 3);
-  assert(al_rmall(array, 200, NULL) == 1);
+  assert(al_rmall_int(array, 200, NULL) == 1);
   assert(al_length(array) == 2);
-  assert(al_rmall(array, 300, NULL) == 1);
+  assert(al_rmall_int(array, 300, NULL) == 1);
   assert(al_length(array) == 1);
-  assert(al_rmall(array, 400, NULL) == 1);
+  assert(al_rmall_int(array, 400, NULL) == 1);
   assert(al_length(array) == 0);
 
-  assert(al_push(&array, 666666));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 666666));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 666666));
-  assert(al_push(&array, 88888888));
-  assert(al_push(&array, 666666));
-  assert(al_push(&array, 88888888));
+  assert(al_push_int(&array, 666666));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 666666));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 666666));
+  assert(al_push_int(&array, 88888888));
+  assert(al_push_int(&array, 666666));
+  assert(al_push_int(&array, 88888888));
   assert(al_length(array) == 8);
 
-  assert(al_rmall(array, 0, NULL) == 0);
+  assert(al_rmall_int(array, 0, NULL) == 0);
   assert(al_length(array) == 8);
 
-  assert(al_rmall(array, 666666, NULL) == 4);
+  assert(al_rmall_int(array, 666666, NULL) == 4);
   assert(al_length(array) == 4);
-  assert(al_rmall(array, 88888888, NULL) == 4);
+  assert(al_rmall_int(array, 88888888, NULL) == 4);
   assert(al_length(array) == 0);
 
   assert(al_free(array));
@@ -800,25 +803,25 @@ static void test_remove_all() {
 static void test_remove_all_same() {
   TEST("test_remove_all_same");
 
-  T *array = al_init();
+  int *array = al_init_int();
   size_t orig_len = 14;
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
   assert(al_length(array) == orig_len);
 
-  al_rmall(array, 8, NULL);
+  al_rmall_int(array, 8, NULL);
   assert(al_length(array) == 0);
 
   for (size_t i = 0; i < orig_len; i++) {
@@ -840,17 +843,18 @@ static void test_remove_all_alternating() {
   TEST("test_remove_all_alternating");
 
   // {8, 8, 1, 8, 8, 8, 2, 8}
-  T *array = al_init();
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 1));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 8));
-  assert(al_push(&array, 2));
-  assert(al_push(&array, 8));
+  int *array = al_init_int();
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 1));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 8));
+  assert(al_push_int(&array, 2));
+  assert(al_push_int(&array, 8));
   assert(al_length(array) == 7);
 
-  al_rmall(array, 8, NULL);
+  al_rmall_int(array, 8, NULL);
+  printf("len: %zu", al_length(array));
   assert(al_length(array) == 2);
 
 #ifdef AL_TEST_LOG
@@ -867,14 +871,14 @@ static void test_remove_all_alternating() {
 static void test_grow_basic() {
   TEST("test_grow_generic");
 
-  T *array = al_init();
+  int *array = al_init_int();
   for (size_t i = 0; i < AL_INIT_CAPACITY; i++) {
-    al_push(&array, 90);
+    al_push_int(&array, 90);
   }
   assert(al_length(array) == AL_INIT_CAPACITY);
   assert(al_capacity(array) == AL_INIT_CAPACITY);
 
-  al_push(&array, 91);
+  al_push_int(&array, 91);
   assert(al_length(array) == AL_INIT_CAPACITY + 1);
   assert(al_capacity(array) == AL_GROWTH_FACTOR * AL_INIT_CAPACITY);
 
@@ -899,23 +903,23 @@ static void test_grow_basic() {
 static void test_grow_manual() {
   TEST("test_grow_manual");
 
-  T *array = al_init();
+  int *array = al_init_int();
   assert(al_length(array) == 0);
   assert(al_capacity(array) == AL_INIT_CAPACITY);
 
-  assert(al_grow(&array));
+  assert(al_grow_int(&array));
   assert(al_length(array) == 0);
   assert(al_capacity(array) == AL_GROWTH_FACTOR * AL_INIT_CAPACITY);
 
-  assert(al_grow(&array));
+  assert(al_grow_int(&array));
   assert(al_length(array) == 0);
   assert(al_capacity(array) == 2 * AL_GROWTH_FACTOR * AL_INIT_CAPACITY);
 
-  assert(al_grow(&array));
+  assert(al_grow_int(&array));
   assert(al_length(array) == 0);
   assert(al_capacity(array) == 4 * AL_GROWTH_FACTOR * AL_INIT_CAPACITY);
 
-  assert(al_grow(NULL) == AL_FAIL);
+  assert(al_grow_int(NULL) == AL_FAIL);
 
   assert(al_free(array));
   PASS();
@@ -924,30 +928,30 @@ static void test_grow_manual() {
 static void test_resize_basic() {
   TEST("test_resize_basic");
 
-  T *array = al_init();
+  int *array = al_init_int();
   assert(al_length(array) == 0);
   assert(al_capacity(array) == AL_INIT_CAPACITY);
 
-  assert(al_resize(&array, 10));
+  assert(al_resize_int(&array, 10));
   assert(al_length(array) == 0);
   assert(al_capacity(array) == 10);
 
-  assert(al_resize(&array, 100));
+  assert(al_resize_int(&array, 100));
   assert(al_length(array) == 0);
   assert(al_capacity(array) == 100);
 
   for (size_t i = 0; i < 100; i++) {
-    assert(al_push(&array, 7));
+    assert(al_push_int(&array, 7));
   }
 
   assert(al_length(array) == 100);
   assert(al_capacity(array) == 100);
 
-  assert(al_resize(&array, 50));
+  assert(al_resize_int(&array, 50));
   assert(al_length(array) == 50);
   assert(al_capacity(array) == 50);
 
-  assert(al_resize(&array, 50));
+  assert(al_resize_int(&array, 50));
   assert(al_length(array) == 50);
   assert(al_capacity(array) == 50);
 
@@ -958,49 +962,49 @@ static void test_resize_basic() {
 static void test_resize_edge_cases() {
   TEST("test_resize_edge_cases");
 
-  T *arr = al_init();
+  int *arr = al_init_int();
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize(&arr, -1) == AL_FAIL);
+  assert(al_resize_int(&arr, -1) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize(&arr, AL_MAXCAP) == AL_FAIL);
+  assert(al_resize_int(&arr, AL_MAXCAP) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize(NULL, AL_MAXCAP) == AL_FAIL);
+  assert(al_resize_int(NULL, AL_MAXCAP) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  T *nullarr = NULL;
-  assert(al_resize(&nullarr, AL_MAXCAP) == AL_FAIL);
+  int *nullarr = NULL;
+  assert(al_resize_int(&nullarr, AL_MAXCAP) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize(&arr, 0));
+  assert(al_resize_int(&arr, 0));
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize(&arr, 1));
+  assert(al_resize_int(&arr, 1));
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == 1);
 
-  assert(al_push(&arr, 100));
-  assert(al_push(&arr, 101));
-  assert(al_push(&arr, 102));
+  assert(al_push_int(&arr, 100));
+  assert(al_push_int(&arr, 101));
+  assert(al_push_int(&arr, 102));
   assert(al_length(arr) == 3);
 
   assert(al_capacity(arr) == 1 * 2 * 2);
 
-  assert(al_resize(&arr, 0));
+  assert(al_resize_int(&arr, 0));
   assert(al_length(arr) == 3);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_push(&arr, 100));
-  assert(al_push(&arr, 101));
-  assert(al_push(&arr, 102));
+  assert(al_push_int(&arr, 100));
+  assert(al_push_int(&arr, 101));
+  assert(al_push_int(&arr, 102));
   assert(al_length(arr) == 6);
 
   assert(al_free(arr));
@@ -1010,17 +1014,17 @@ static void test_resize_edge_cases() {
 static void test_clear() {
   TEST("test_clear");
 
-  T *arr = al_init();
+  int *arr = al_init_int();
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
   for (size_t i = 0; i < 100; i++) {
-    assert(al_push(&arr, 100));
+    assert(al_push_int(&arr, 100));
   }
   assert(al_length(arr) == 100);
   assert(al_capacity(arr) == AL_INIT_CAPACITY * 2 * 2);
 
-  assert(al_clear(arr));
+  assert(al_clear_int(arr));
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY * 2 * 2);
 
@@ -1032,38 +1036,38 @@ static void test_clear() {
   PASS();
 }
 
-static int reverse_cmp(T a, T b) { return (a != b) ? 0 : 1; }
+static int reverse_cmp(int a, int b) { return (a != b) ? 0 : 1; }
 
 static void test_contains() {
   TEST("test_contains");
 
-  T *arr = al_init();
+  int *arr = al_init_int();
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_push(&arr, 100));
-  assert(al_push(&arr, 101));
-  assert(al_push(&arr, 102));
-  assert(al_push(&arr, 103));
+  assert(al_push_int(&arr, 100));
+  assert(al_push_int(&arr, 101));
+  assert(al_push_int(&arr, 102));
+  assert(al_push_int(&arr, 103));
 
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_contains(arr, 100, NULL) == 0);
-  assert(al_contains(arr, 101, NULL) == 1);
-  assert(al_contains(arr, 102, NULL) == 2);
-  assert(al_contains(arr, 103, NULL) == 3);
+  assert(al_contains_int(arr, 100, NULL) == 0);
+  assert(al_contains_int(arr, 101, NULL) == 1);
+  assert(al_contains_int(arr, 102, NULL) == 2);
+  assert(al_contains_int(arr, 103, NULL) == 3);
 
-  assert(al_contains(arr, 0, NULL) == AL_ERRSIZE);
-  assert(al_contains(arr, 1, NULL) == AL_ERRSIZE);
-  assert(al_contains(arr, 2, NULL) == AL_ERRSIZE);
+  assert(al_contains_int(arr, 0, NULL) == AL_ERRSIZE);
+  assert(al_contains_int(arr, 1, NULL) == AL_ERRSIZE);
+  assert(al_contains_int(arr, 2, NULL) == AL_ERRSIZE);
 
-  assert(al_contains(arr, 0, reverse_cmp) == 0);
-  assert(al_contains(arr, 1, reverse_cmp) == 0);
-  assert(al_contains(arr, 2, reverse_cmp) == 0);
+  assert(al_contains_int(arr, 0, reverse_cmp) == 0);
+  assert(al_contains_int(arr, 1, reverse_cmp) == 0);
+  assert(al_contains_int(arr, 2, reverse_cmp) == 0);
 
   // skips `100` and returns on the first different item
-  assert(al_contains(arr, 100, reverse_cmp) == 1);
+  assert(al_contains_int(arr, 100, reverse_cmp) == 1);
 
   assert(al_free(arr));
   PASS();
@@ -1072,14 +1076,14 @@ static void test_contains() {
 static void test_copy() {
   TEST("test_copy");
 
-  T *arr = al_init();
+  int *arr = al_init_int();
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_push(&arr, 100));
-  assert(al_push(&arr, 101));
-  assert(al_push(&arr, 102));
-  assert(al_push(&arr, 103));
+  assert(al_push_int(&arr, 100));
+  assert(al_push_int(&arr, 101));
+  assert(al_push_int(&arr, 102));
+  assert(al_push_int(&arr, 103));
 
   assert(arr[0] == 100);
   assert(arr[1] == 101);
@@ -1089,12 +1093,12 @@ static void test_copy() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  T *arr1 = al_copy(arr);
+  int *arr1 = al_copy_int(arr);
 
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  T *emptycopy = al_copy(al_init());
+  int *empty = al_init_int(), *emptycopy = al_copy_int(empty);
   assert(al_length(emptycopy) == 0);
   assert(al_capacity(emptycopy) == AL_INIT_CAPACITY);
 
@@ -1104,20 +1108,23 @@ static void test_copy() {
   assert(arr1[3] == 103);
 
   assert(al_free(arr));
+  assert(al_free(arr1));
+  assert(al_free(empty));
+  assert(al_free(emptycopy));
   PASS();
 }
 
 static void test_swap() {
   TEST("test_swap");
 
-  T *arr = al_init();
+  int *arr = al_init_int();
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_push(&arr, 100));
-  assert(al_push(&arr, 101));
-  assert(al_push(&arr, 102));
-  assert(al_push(&arr, 103));
+  assert(al_push_int(&arr, 100));
+  assert(al_push_int(&arr, 101));
+  assert(al_push_int(&arr, 102));
+  assert(al_push_int(&arr, 103));
 
   assert(arr[0] == 100);
   assert(arr[1] == 101);
@@ -1127,7 +1134,7 @@ static void test_swap() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_swap(arr, 3, 0));
+  assert(al_swap_int(arr, 3, 0));
 
   assert(arr[0] == 103);
   assert(arr[1] == 101);
@@ -1136,7 +1143,7 @@ static void test_swap() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_swap(arr, 0, 3));
+  assert(al_swap_int(arr, 0, 3));
   assert(arr[0] == 100);
   assert(arr[1] == 101);
   assert(arr[2] == 102);
@@ -1144,7 +1151,7 @@ static void test_swap() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_swap(arr, 1, 2));
+  assert(al_swap_int(arr, 1, 2));
   assert(arr[0] == 100);
   assert(arr[1] == 102);
   assert(arr[2] == 101);
@@ -1152,7 +1159,7 @@ static void test_swap() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_swap(arr, 2, 0));
+  assert(al_swap_int(arr, 2, 0));
   assert(arr[0] == 101);
   assert(arr[1] == 102);
   assert(arr[2] == 100);
@@ -1160,8 +1167,8 @@ static void test_swap() {
   assert(al_length(arr) == 4);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_swap(arr, al_length(arr), 103) == AL_FAIL);
-  assert(al_swap(arr, 0, al_length(arr)) == AL_FAIL);
+  assert(al_swap_int(arr, al_length(arr), 103) == AL_FAIL);
+  assert(al_swap_int(arr, 0, al_length(arr)) == AL_FAIL);
 
   assert(al_free(arr));
   PASS();
