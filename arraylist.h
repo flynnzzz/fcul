@@ -10,8 +10,27 @@
  * but arraylists allocated with the provided constructors, or else `undefined
  * behaviour` will occur.
  *
- * The API Achieves generics like behaviour through the use of macros,
- * exchanging code length for simplicity and compile time type checking.
+ * The API Achieves generics like behaviour through the use of token pasting by
+ * macros, it exchanges code length for simplicity and compile time type
+ * checking.
+ *
+ *
+ * **On error codes**:
+ *
+ * In functions which do not have a useful return value, a generic failure
+ * code of integer type will be returned instead:
+ * - AL_FAIL (0)
+ * - AL_SUCCESS (1)
+ *
+ * On the other hand, if a function is expected to return a type of `size_t`, a
+ * failure can be identified by comparing the return value with the largest
+ * possible representable number by that type:
+ * - AL_ERRSIZE (varies by architecture)
+ *
+ * If the return type of the function is of generic `T` type, the macro
+ * `AL_ERRTYPE(T)` can be used to check if an error occurred. The biggest
+ * downside being that is no way of knowing if the returned values represents an
+ * error or a zero-initiated value.
  *
  */
 
@@ -28,8 +47,8 @@
 #define AL_MAXSIZE ((~(size_t)0) >> 1)
 #define AL_MAXCAP(T) ((AL_MAXSIZE - sizeof(al_head)) / sizeof(T))
 #define AL_MAXBUF 256
-
-enum al_errcode { AL_FAIL, AL_SUCCESS };
+#define AL_FAIL 0
+#define AL_SUCCESS 1
 #define AL_ERRSIZE (~(size_t)0)
 #define AL_ERRTYPE(T) ((T){0})
 

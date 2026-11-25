@@ -36,5 +36,6 @@ int main() {
   al_push_head(&arr, (al_head){7, 16});
   al_print_head(arr, head_to_string);
 
+  al_free(arr);
   return 0;
 }
