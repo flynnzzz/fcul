@@ -23,11 +23,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define AL_MAXBUF 256
 #define AL_INIT_CAPACITY 32
-#define AL_MAXSIZE ((~(size_t)0) >> 1)
-#define AL_MAXCAP(T) ((AL_MAXSIZE - sizeof(alH_head)) / sizeof(T))
 #define AL_GROWTH_FACTOR 2
+#define AL_MAXSIZE ((~(size_t)0) >> 1)
+#define AL_MAXCAP(T) ((AL_MAXSIZE - sizeof(al_head)) / sizeof(T))
+#define AL_MAXBUF 256
 
 enum al_errcode { AL_FAIL, AL_SUCCESS };
 #define AL_ERRSIZE (~(size_t)0)
@@ -44,25 +44,23 @@ enum al_errcode { AL_FAIL, AL_SUCCESS };
     }                                                                          \
   } while (0)
 
-#define __alH_skiphead(head) ((void *)((alH_head *)(head) + 1))
-#define __alH_head(array) ((alH_head *)(array) - 1)
+#define __alH_skiphead(head) ((void *)((al_head *)(head) + 1))
+#define __alH_head(array) ((al_head *)(array) - 1)
 
-typedef struct alH_head_t {
+typedef struct al_head_t {
   size_t length, capacity;
-} alH_head;
+} al_head;
 
 /*
  * Simply returns error `code` if `AL_ENABLE_TESTS` is defined, else aborts
  * the program.
  */
-static inline int alH_fail(int code) {
+static inline int __alH_fail(int code) {
 #ifndef AL_ENABLE_TESTS
   exit(EXIT_FAILURE);
 #endif
   return code;
 }
-
-// TODO: unwrap as many functions as possible from the macros
 
 /*
  * Returns the current length of an arraylist, `AL_ERRSIZE` in case of failure.
@@ -116,8 +114,8 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
     }                                                                          \
                                                                                \
     capacity = capacity == 0 ? AL_INIT_CAPACITY : capacity;                    \
-    alH_head *head =                                                           \
-        (alH_head *)malloc(sizeof(alH_head) + (capacity * sizeof(T)));         \
+    al_head *head =                                                            \
+        (al_head *)malloc(sizeof(al_head) + (capacity * sizeof(T)));           \
     if (!head) {                                                               \
       alH_log("Cannot allocate memory");                                       \
       return NULL;                                                             \
@@ -154,15 +152,15 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
       alH_log("`capacity` exceeds maximum capacity");                          \
       return AL_FAIL;                                                          \
     }                                                                          \
-    alH_head *head = __alH_head(*arrptr), *new_head;                           \
+    al_head *head = __alH_head(*arrptr), *new_head;                            \
     size_t oldlen = head->length;                                              \
                                                                                \
     capacity = (capacity == 0) ? AL_INIT_CAPACITY : capacity;                  \
     new_head =                                                                 \
-        (alH_head *)realloc(head, sizeof(alH_head) + sizeof(T) * capacity);    \
+        (al_head *)realloc(head, sizeof(al_head) + sizeof(T) * capacity);      \
     if (!new_head) {                                                           \
       alH_log("Reallocation failed");                                          \
-      return alH_fail(AL_FAIL);                                                \
+      return __alH_fail(AL_FAIL);                                              \
     }                                                                          \
                                                                                \
     new_head->capacity = capacity;                                             \
@@ -196,7 +194,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
                                                                                \
     T *array = *arrptr;                                                        \
                                                                                \
-    alH_head *head = __alH_head(array);                                        \
+    al_head *head = __alH_head(array);                                         \
     if (head->length + 1 >= AL_MAXCAP(T)) {                                    \
       alH_log("array reached maximum capacity");                               \
       return AL_FAIL;                                                          \
@@ -366,17 +364,15 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
    *                                                                           \
    * Returns generic error codes `AL_SUCCESS` / `AL_FAIL`.                     \
    */                                                                          \
-  static int al_print_##name(const T array[],                                  \
-                             int (*to_string)(const T, char *)) {              \
+  static int al_print_##name(T array[], int (*to_string)(const T, char *)) {   \
     alH_nullguard(array, "NULL pointer", AL_FAIL);                             \
-    alH_nullguard(to_string, "provided `to_string` callback is NULL",          \
-                  AL_FAIL);                                                    \
                                                                                \
-    alH_head *head = __alH_head(array);                                        \
+    al_head *head = __alH_head(array);                                         \
     char buffer[AL_MAXBUF] = "\0";                                             \
     printf("{ ");                                                              \
     for (size_t i = 0; i < head->length; i++) {                                \
-      if (!to_string || !to_string(array[i], buffer)) {                        \
+      if ((to_string == NULL) ? !snprintf(buffer, AL_MAXBUF, "%s %zu", #T, i)  \
+                              : !to_string(array[i], buffer)) {                \
         alH_log("string conversion failed");                                   \
         return AL_FAIL;                                                        \
       }                                                                        \
