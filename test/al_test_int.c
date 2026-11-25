@@ -18,9 +18,6 @@
 
 al_define(int, int);
 
-#define AL_ERRTYPE 0
-#define AL_MAXCAP ((AL_MAXSIZE - sizeof(alH_head)) / sizeof(int))
-
 int int_to_string(int t, char *buf) { return snprintf(buf, 32, "%d", t); }
 
 static void test_empty_array() {
@@ -139,7 +136,7 @@ static void test_remove_nonexistent_value() {
   al_push_int(&array, 1);
   assert(al_length(array) == 1);
 
-  assert(al_rm_int(array, 999, NULL) == AL_ERRTYPE);
+  assert(al_rm_int(array, 999, NULL) == AL_ERRTYPE(int));
 
   assert(al_length(array) == 1);
   assert(array[0] == 1);
@@ -228,9 +225,9 @@ static void test_iremove_empty_array() {
   TEST("test_iremove_empty_array");
 
   int *array = al_init_int();
-  assert(al_rm_int(array, 0, NULL) == AL_ERRTYPE);
-  assert(al_rm_int(array, 10, NULL) == AL_ERRTYPE);
-  assert(al_rm_int(array, -10, NULL) == AL_ERRTYPE);
+  assert(al_rm_int(array, 0, NULL) == AL_ERRTYPE(int));
+  assert(al_rm_int(array, 10, NULL) == AL_ERRTYPE(int));
+  assert(al_rm_int(array, -10, NULL) == AL_ERRTYPE(int));
 
   assert(al_free(array));
   PASS();
@@ -360,10 +357,10 @@ static void test_iremove_out_of_bounds() {
   }
   assert(al_length(array) == 10);
 
-  assert(al_rmat_int(array, -1) == AL_ERRTYPE);
+  assert(al_rmat_int(array, -1) == AL_ERRTYPE(int));
   assert(al_length(array) == 10); // Should still be 10
 
-  assert(al_rmat_int(array, 99) == AL_ERRTYPE);
+  assert(al_rmat_int(array, 99) == AL_ERRTYPE(int));
   assert(al_length(array) == 10); // Should still be 10
 
   assert(al_free(array));
@@ -579,7 +576,7 @@ static void test_all_functions_used() {
 static void test_new_exceed_maximum_capacity() {
   TEST("test_new_exceed_maximum_capacity");
 
-  int *array = al_create_int(AL_MAXCAP);
+  int *array = al_create_int(AL_MAXCAP(int));
   assert(array == NULL);
 
   PASS();
@@ -588,7 +585,7 @@ static void test_new_exceed_maximum_capacity() {
 static void test_create_large_number() {
   TEST("test_create_large_number");
 
-  int *array = al_create_int(AL_MAXCAP - 1);
+  int *array = al_create_int(AL_MAXCAP(int) - 1);
   assert(!array);
   assert(!al_free(array));
 
@@ -970,16 +967,16 @@ static void test_resize_edge_cases() {
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize_int(&arr, AL_MAXCAP) == AL_FAIL);
+  assert(al_resize_int(&arr, AL_MAXCAP(int)) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
-  assert(al_resize_int(NULL, AL_MAXCAP) == AL_FAIL);
+  assert(al_resize_int(NULL, AL_MAXCAP(int)) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 
   int *nullarr = NULL;
-  assert(al_resize_int(&nullarr, AL_MAXCAP) == AL_FAIL);
+  assert(al_resize_int(&nullarr, AL_MAXCAP(int)) == AL_FAIL);
   assert(al_length(arr) == 0);
   assert(al_capacity(arr) == AL_INIT_CAPACITY);
 

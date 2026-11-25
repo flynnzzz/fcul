@@ -29,7 +29,7 @@
 #define AL_MAXCAP(T) ((AL_MAXSIZE - sizeof(alH_head)) / sizeof(T))
 #define AL_GROWTH_FACTOR 2
 
-enum alH_errcode { AL_FAIL, AL_SUCCESS };
+enum al_errcode { AL_FAIL, AL_SUCCESS };
 #define AL_ERRSIZE (~(size_t)0)
 #define AL_ERRTYPE(T) ((T){0})
 
@@ -263,7 +263,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
   /*                                                                           \
    * Removes and returns the item at the specified `index`.                    \
    *                                                                           \
-   * Returns `AL_ERRTYPE` if no item was found or in case an error was         \
+   * Returns `AL_ERRTYPE(T)` if no item was found or in case an error was      \
    * encountered.                                                              \
    */                                                                          \
   static inline T al_rmat_##name(T array[], size_t index) {                    \
@@ -289,7 +289,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
    * This function accepts a comparator callback, it can be set to `NULL` for  \
    * plain value comparison.                                                   \
    *                                                                           \
-   * Returns `AL_ERRTYPE` if no item was found or in case an error was         \
+   * Returns `AL_ERRTYPE(T)` if no item was found or in case an error was      \
    * encountered.                                                              \
    */                                                                          \
   static T al_rm_##name(T array[], const T item,                               \
@@ -346,7 +346,7 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
   /*                                                                           \
    * Removes and returns last item in the arraylist.                           \
    *                                                                           \
-   * Returns `AL_ERRTYPE` in case of error.                                    \
+   * Returns `AL_ERRTYPE(T)` in case of error.                                 \
    */                                                                          \
   static inline T al_pop_##name(T array[]) {                                   \
     alH_nullguard(array, "NULL pointer", AL_ERRTYPE(T));                       \
@@ -369,6 +369,8 @@ static inline void alH_set(void *array, int c, size_t start, size_t end,
   static int al_print_##name(const T array[],                                  \
                              int (*to_string)(const T, char *)) {              \
     alH_nullguard(array, "NULL pointer", AL_FAIL);                             \
+    alH_nullguard(to_string, "provided `to_string` callback is NULL",          \
+                  AL_FAIL);                                                    \
                                                                                \
     alH_head *head = __alH_head(array);                                        \
     char buffer[AL_MAXBUF] = "\0";                                             \
